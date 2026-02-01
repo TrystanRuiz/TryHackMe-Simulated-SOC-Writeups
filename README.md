@@ -9,8 +9,7 @@ A walkthrough of my writeups on the day to day ticket responding skills
 
 
 
-SS pointers
-------------
+
 ![](../THM-Screenshots/thm1.png)
 ![](../THM-Screenshots/thm2.png)
 ![](../THM-Screenshots/thm3.png)

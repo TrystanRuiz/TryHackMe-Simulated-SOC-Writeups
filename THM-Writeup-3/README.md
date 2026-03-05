@@ -1,10 +1,3 @@
-# SOC Lab #03 — Firewall Alert: Access to Blacklisted External URL
-**Platform:** TryHackMe SOC Simulator  
-**Category:** Firewall / Network Security  
-**Difficulty:** High  
-**Date:** February 1, 2026  
-**Outcome:** ✅ True Positive — Escalated
-
 ---
 
 ## Overview

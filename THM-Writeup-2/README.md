@@ -113,4 +113,4 @@ Based on the email artifact analysis and URL reputation confirmation, this alert
 
 ---
 
-*Write-up by Trystan Ruiz | TryHackMe SOC Simulator | Blue Team Portfolio*
+*Write-up by Trystan Ruiz 

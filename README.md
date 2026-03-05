@@ -1,27 +1,10 @@
-# TryHackMe-Simulated-SOC-Writeups
-A walkthrough of my writeups on the day to day ticket responding skills
+# TryHackMe Simulated SOC Writeups
 
+A collection of SOC analyst simulation writeups covering real-world ticket response scenarios.
 
+## Writeups
 
-
-
-
-
-
-
-
-![](../THM-Screenshots/thm1.png)
-![](../THM-Screenshots/thm2.png)
-![](../THM-Screenshots/thm3.png)
-![](../THM-Screenshots/thm4.png)
-![](../THM-Screenshots/thm5.png)
-![](../THM-Screenshots/thm6.png)
-![](../THM-Screenshots/thm7.png)
-![](../THM-Screenshots/thm8.png)
-![](../THM-Screenshots/thm9.png)
-![](../THM-Screenshots/thm10.png)
-![](../THM-Screenshots/thm11.png)
-![](../THM-Screenshots/thm12.png)
-![](../THM-Screenshots/thm13.png)
-![](../THM-Screenshots/thm14.png)
-![](../THM-Screenshots/thm15.png)
+| # | Title |
+|---|-------|
+| 1 | [Access to Blacklisted External URL Blocked by Firewall](./THM-Writeup-1/README.md) |
+| 2 | [Phishing Investigation](./THM-Writeup-2/README.md) |

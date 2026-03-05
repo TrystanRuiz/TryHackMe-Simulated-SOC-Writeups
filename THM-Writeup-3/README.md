@@ -1,3 +1,4 @@
+SOC Lab #03 — Firewall Alert: Access to Blacklisted External URL
 ---
 
 ## Overview

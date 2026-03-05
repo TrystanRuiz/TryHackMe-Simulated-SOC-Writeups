@@ -1,10 +1,4 @@
 # SOC Lab #02 — Phishing Email Investigation
-**Platform:** TryHackMe SOC Simulator  
-**Category:** Phishing Analysis  
-**Difficulty:** Medium  
-**Date:** February 1, 2026  
-**Outcome:** ✅ True Positive — Closed, No Escalation Required
-
 ---
 
 ## Overview

@@ -101,4 +101,4 @@ Based on the email artifact analysis and URL reputation scan, this alert was cla
 
 ---
 
-*Write-up by Trystan Ruiz | TryHackMe SOC Simulator | Blue Team Portfolio*
+*Write-up by Trystan Ruiz*

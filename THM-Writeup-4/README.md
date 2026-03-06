@@ -1,10 +1,4 @@
 # SOC Lab #04 — Microsoft Account Impersonation Phishing
-**Platform:** TryHackMe SOC Simulator  
-**Category:** Phishing Analysis  
-**Difficulty:** Medium  
-**Date:** February 1, 2026  
-**Outcome:** ✅ True Positive — No Escalation Required
-
 ---
 
 ## Overview
@@ -158,4 +152,4 @@ Verifying these four things takes under 30 seconds and catches the majority of b
 
 ---
 
-*Write-up by Trystan Ruiz | TryHackMe SOC Simulator | Blue Team Portfolio*
+*Write-up by Trystan Ruiz*

@@ -113,4 +113,4 @@ Based on the email artifact analysis and URL reputation confirmation, this alert
 
 ---
 
-*Write-up by Trystan Ruiz 
+*Write-up by Trystan Ruiz*

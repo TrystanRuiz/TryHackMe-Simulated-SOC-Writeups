@@ -157,4 +157,4 @@ This demonstrates how a single unblocked phishing email can result in downstream
 
 ---
 
-*Write-up by Trystan Ruiz | TryHackMe SOC Simulator | Blue Team Portfolio*
+*Write-up by Trystan Ruiz*

@@ -1,10 +1,8 @@
 # SOC Lab #03 — Firewall Alert: Access to Blacklisted External URL
 
----
-
-## Overview
-
-High severity firewall alert — an internal host tried to reach a blacklisted external URL and got blocked. Once I pulled the logs I recognized the URL from the phishing email in Lab #02, which meant the user actually clicked the link. Had to escalate this one.
+**Platform:** TryHackMe SOC Simulator
+**Date:** February 1, 2026
+**Outcome:** True Positive, escalated
 
 ---
 
@@ -14,84 +12,62 @@ High severity firewall alert — an internal host tried to reach a blacklisted e
 |---|---|
 | Event ID | 8816 |
 | Alert Rule | Access to Blacklisted External URL Blocked by Firewall |
-| Incident Type | Firewall |
-| Severity | **High** |
+| Severity | High |
 | Date Detected | February 1st, 2026 at 19:59 |
 | Data Source | Firewall |
 | Action Taken | Blocked |
 
 ---
 
-## Investigation
+## What Happened
 
-### Step 1 — Alert Triage
+High severity firewall alert — internal host tried to reach a blacklisted external URL and got blocked. This came in a few hours after the phishing alert from Lab #02.
 
-Pulled up Event ID 8816. Firewall flagged an outbound connection from an internal host to an IP on the blacklist. Connection got blocked, but the fact that it tried at all means something triggered it.
+Pulled up the firewall log for Event ID 8816 and immediately recognized the URL: `http://bit.ly/3sHkX3da12340` — same link from the phishing email. So h.harris clicked it.
 
-![Firewall alert queue showing Event ID 8816 flagged as High severity with full connection details](screenshots/firewall_alert_details.png)
-*Figure 1: Alert queue entry for Event ID 8816 — Access to Blacklisted External URL Blocked by Firewall*
+![Firewall alert queue showing Event ID 8816 with full connection details](screenshots/firewall_alert_details.png)
 
-**Firewall log breakdown:**
+**Log breakdown:**
 
-| Field | Value | Significance |
+| Field | Value | Notes |
 |---|---|---|
-| Source IP | 10.20.2.17 | Internal endpoint — potential victim host |
-| Source Port | 34257 | Ephemeral port — outbound connection initiated by host |
-| Destination IP | 67.199.248.11 | External IP — blacklisted |
-| Destination Port | 80 | HTTP — unencrypted web traffic |
-| URL | http://bit.ly/3sHkX3da12340 | Same malicious URL from Lab #02 phishing email |
-| Application | Web-browsing | User-initiated browser request |
-| Protocol | TCP | Standard web connection |
-| Rule Triggered | Blocked Websites | Firewall blacklist rule fired |
+| Source IP | 10.20.2.17 | Internal host — h.harris's workstation |
+| Destination IP | 67.199.248.11 | Blacklisted external IP |
+| Destination Port | 80 | HTTP |
+| URL | http://bit.ly/3sHkX3da12340 | Same URL from Lab #02 phishing email |
+| Action | Blocked | Firewall caught it |
 
-The URL in the log was `http://bit.ly/3sHkX3da12340` — the exact same link from the phishing email in Lab #02. So `h.harris` clicked it.
+Ran the destination IP through TryDetectThis to confirm independently.
 
----
+![TryDetectThis confirming 67.199.248.11 as MALICIOUS](screenshots/ip_reputation_malicious.png)
 
-### Step 2 — IP Reputation Analysis
+Also ran the URL itself.
 
-Pulled the destination IP `67.199.248.11` and ran it through TryDetectThis separately from the URL to double check.
+![TryDetectThis confirming the bit.ly URL as MALICIOUS](screenshots/url_reputation_malicious.png)
 
-**IP submitted:** `67.199.248.11`
+Both malicious. No doubt about a false positive here.
 
-**Result: MALICIOUS**
+The firewall blocked the connection but that doesn't mean nothing happened — we don't know if the user entered credentials before the block kicked in. That's why this needed to go up.
 
-![TryDetectThis IP analysis confirming destination IP 67.199.248.11 as MALICIOUS](screenshots/ip_reputation_malicious.png)
-*Figure 2: TryDetectThis URL/IP Security Check confirming MALICIOUS status for destination IP 67.199.248.11*
-
----
-
-### Step 3 — URL Reputation Confirmation
-
-Also ran the URL itself to confirm both were flagged independently.
-
-**URL submitted:** `http://bit.ly/3sHkX3da12340`
-
-**Result: MALICIOUS**
-
-![TryDetectThis URL analysis confirming the bit.ly link as MALICIOUS](screenshots/url_reputation_malicious.png)
-*Figure 3: TryDetectThis confirming MALICIOUS status for the embedded bit.ly URL*
-
-Both came back malicious. No way this is a false positive.
-
----
-
-### Step 4 — Incident Report & Escalation Decision
-
-Both checks confirmed malicious infrastructure and the source IP pointed to an internal workstation. Filled out the incident report and escalated.
-
-![Completed incident report showing True Positive classification, affected entities, escalation reasoning and remediation actions](screenshots/incident_report.png)
-*Figure 4: Completed incident report — True Positive, escalated due to potential compromised workstation*
-
-**Incident report summary:**
+![Completed incident report](screenshots/incident_report.png)
 
 | Field | Detail |
 |---|---|
-| Time of Activity | Feb 1st 2026 @ 15:00 |
-| Affected Entity | 10.20.2.17 |
+| Affected Host | 10.20.2.17 |
 | Classification | True Positive |
-| Reason for True Positive | Internal computer attempted to access a known malicious IP and website |
-| Reason for Escalation | Potential compromised user account and/or workstation |
+| Reason for Escalation | Potential compromised workstation/account |
+
+---
+
+## How This Connects to Lab #02
+
+| Time | Event |
+|---|---|
+| 14:59 | Phishing email delivered to h.harris (Lab #02) |
+| 15:00 | User clicks the link — 10.20.2.17 initiates outbound connection |
+| 19:59 | Firewall alert fires (Lab #03) |
+
+The phishing email from Lab #02 is what caused this alert. Two separate alerts, one attack chain.
 
 ---
 
@@ -102,58 +78,25 @@ Both checks confirmed malicious infrastructure and the source IP pointed to an i
 | Malicious Destination IP | 67.199.248.11 | High |
 | Malicious URL | http://bit.ly/3sHkX3da12340 | High |
 | Affected Internal Host | 10.20.2.17 | High |
-| Protocol/Port | TCP/80 | Medium |
 
 ---
 
-## MITRE ATT&CK Mapping
+## MITRE ATT&CK
 
-| Technique ID | Technique Name | Observed Behavior |
+| Technique ID | Technique Name | Notes |
 |---|---|---|
-| T1566.002 | Phishing: Spearphishing Link | User clicked malicious link from phishing email (Lab #02) |
-| T1204.001 | User Execution: Malicious Link | Internal host initiated outbound connection to attacker infrastructure |
-| T1071.001 | Application Layer Protocol: Web Protocols | Outbound HTTP connection over TCP/80 to attacker IP |
-| T1090 | Proxy | Bit.ly URL shortener used to redirect to malicious destination |
+| T1566.002 | Phishing: Spearphishing Link | User clicked link from phishing email in Lab #02 |
+| T1204.001 | User Execution: Malicious Link | Outbound connection initiated from internal host |
+| T1071.001 | Application Layer Protocol: Web Protocols | HTTP over TCP/80 to attacker IP |
+| T1090 | Proxy | bit.ly used to redirect to malicious destination |
 
 ---
 
-## Verdict & Response
+## Verdict
 
-**Classification:** True Positive
-**Escalation Required:** Yes
+True positive, escalated. The firewall blocked the connection but a blocked connection still means something triggered it. Recommended actions: contact h.harris and find out if anything was entered, isolate 10.20.2.17 if needed, reset credentials, and pull endpoint logs. Make sure the IP and URL are blocked org-wide.
 
-`h.harris@thetrydaily.thm` clicked the link from the phishing email. Their workstation (`10.20.2.17`) tried to connect out to `67.199.248.11`. Firewall caught it but we still don't know if anything was entered before the connection got blocked, so it needed to go up.
-
-**Recommended remediation actions:**
-
-- Contact the user tied to `10.20.2.17` and find out if they entered any credentials before the connection was cut
-- If anything is unclear, isolate `10.20.2.17` from the network immediately
-- Reset credentials on the affected account as a precaution
-- Pull the endpoint logs on `10.20.2.17` and look for anything else suspicious
-- Make sure `67.199.248.11` and the bit.ly URL are blocked org-wide
-
----
-
-## Connection to Lab #02
-
-This is a direct follow-on from [SOC Lab #02](../THM-Writeup-2/README.md). The phishing email came in at 14:59 and by 15:00 the user had already clicked the link.
-
-| Time | Event |
-|---|---|
-| 14:59 | Phishing email delivered to h.harris@thetrydaily.thm (Lab #02) |
-| 15:00 | User clicks malicious link — outbound connection attempt from 10.20.2.17 |
-| 19:59 | Firewall alert fires on blacklisted URL access (Lab #03) |
-
-Working these tickets in isolation would have missed the full picture. The firewall alert alone just looks like a blocked connection — correlating it back to the phishing email tells you exactly what happened and why.
-
----
-
-## Key Takeaways
-
-- A blocked firewall connection is not a closed case. Something caused it and you need to find out what
-- Tying this back to Lab #02 made everything clear. The phishing email was the root cause
-- This went from medium severity (phishing) to high (potential compromised host) the moment the user clicked. That escalation difference matters
-- Running the IP and URL through rep checks independently gives you more confidence before escalating — if either came back clean it would've changed the analysis
+Big takeaway from this one — working the phishing ticket and the firewall ticket separately would've missed the full picture. Correlating them told the whole story.
 
 ---
 

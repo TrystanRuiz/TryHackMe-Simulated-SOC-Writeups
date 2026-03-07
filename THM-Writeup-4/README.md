@@ -18,41 +18,29 @@
 
 ---
 
-## What Happened
+## Investigation
 
-Same alert rule as Lab #02. Pulled up Event ID 8817 — inbound email with a suspicious link.
+Pulled up Event ID 8817. Inbound email flagged for a suspicious link.
 
-Sender was `no-reply@m1crosoftsupport.co`. The "i" in Microsoft is replaced with a "1". If you're reading fast you'd probably miss it, which is the whole point. Real Microsoft emails come from @microsoft.com, not some .co domain with a character swap in the name.
+Sender was `no-reply@m1crosoftsupport.co` — "i" swapped for "1" in Microsoft. Subject was "Unusual Sign-In Activity on Your Microsoft Account." Email body referenced a sign-in from Lagos, Nigeria (`102.89.222.143`) as the supposed suspicious location. Link goes to `https://m1crosoftsupport.co/login`.
 
-Subject line was "Unusual Sign-In Activity on Your Microsoft Account" — classic fear lure. The email body also referenced a sign-in attempt from Lagos, Nigeria with an IP (`102.89.222.143`) attached to it. That detail is just there to make it feel real and get the user to click without thinking.
-
-The embedded link goes to `https://m1crosoftsupport.co/login` — same typosquatted domain, fake Microsoft login page to harvest credentials.
-
-![Full alert and email details for Event ID 8817](screenshots/alert_email_details.png)
-
-**Email artifacts:**
+![Alert and email details for Event ID 8817](screenshots/alert_email_details.png)
 
 | Artifact | Value | Finding |
 |---|---|---|
-| Sender | no-reply@m1crosoftsupport.co | "i" replaced with "1" — typosquatting |
+| Sender | no-reply@m1crosoftsupport.co | Typosquatting — "i" replaced with "1" |
 | Recipient | c.allen@thetrydaily.thm | Internal employee |
 | Subject | Unusual Sign-In Activity on Your Microsoft Account | Fear/urgency lure |
 | Embedded URL | https://m1crosoftsupport.co/login | Fake Microsoft login page |
-| IP in Email Body | 102.89.222.143 | Lagos, Nigeria — used for social engineering |
+| IP in Email Body | 102.89.222.143 | Lagos, Nigeria |
 
 Ran the URL through TryDetectThis.
 
-![TryDetectThis confirming the URL as MALICIOUS](screenshots/url_reputation_malicious.png)
+![TryDetectThis confirming MALICIOUS](screenshots/url_reputation_malicious.png)
 
-Malicious. Closed it out.
+Malicious.
 
-![Completed incident report](screenshots/incident_report.png)
-
-| Field | Detail |
-|---|---|
-| Affected User | Charlotte Allen, c.allen@thetrydaily.thm |
-| Classification | True Positive |
-| Reason for No Escalation | No evidence the user interacted with the link |
+![Incident report](screenshots/incident_report.png)
 
 ---
 
@@ -60,9 +48,9 @@ Malicious. Closed it out.
 
 | IOC Type | Value | Confidence |
 |---|---|---|
-| Typosquatted Sender Domain | m1crosoftsupport.co | High |
+| Typosquatted Domain | m1crosoftsupport.co | High |
 | Malicious URL | https://m1crosoftsupport.co/login | High |
-| Foreign IP in Email Body | 102.89.222.143 | Medium |
+| IP in Email Body | 102.89.222.143 | Medium |
 
 ---
 
@@ -72,16 +60,14 @@ Malicious. Closed it out.
 |---|---|---|
 | T1566.002 | Phishing: Spearphishing Link | Malicious URL targeting internal employee |
 | T1036.005 | Masquerading: Match Legitimate Name | Typosquatted domain impersonating Microsoft |
-| T1078 | Valid Accounts | Credential harvesting targeting Microsoft login |
+| T1078 | Valid Accounts | Credential harvesting via fake login page |
 | T1204.001 | User Execution: Malicious Link | User prompted to click fake login link |
 
 ---
 
 ## Verdict
 
-True positive. Typosquatted domain, confirmed malicious URL, fake Microsoft login page. No evidence Charlotte clicked it so no escalation — blocked the domain, quarantined the email, added the IP to the blocklist.
-
-The character swap (i to 1) is subtle enough that it's worth specifically flagging to the user so they know what to look for next time.
+True positive. Typosquatted domain, malicious URL confirmed. No evidence c.allen clicked it — blocked the domain, quarantined the email, added the IP to the blocklist. Notified the user about the typosquatting.
 
 ---
 

@@ -19,55 +19,43 @@
 
 ---
 
-## What Happened
+## Investigation
 
-High severity firewall alert — internal host tried to reach a blacklisted external URL and got blocked. This came in a few hours after the phishing alert from Lab #02.
+Pulled up Event ID 8816. Internal host attempted an outbound connection to a blacklisted IP, firewall blocked it.
 
-Pulled up the firewall log for Event ID 8816 and immediately recognized the URL: `http://bit.ly/3sHkX3da12340` — same link from the phishing email. So h.harris clicked it.
+URL in the log was `http://bit.ly/3sHkX3da12340` — same link from the phishing email in Lab #02. h.harris clicked it.
 
-![Firewall alert queue showing Event ID 8816 with full connection details](screenshots/firewall_alert_details.png)
-
-**Log breakdown:**
+![Firewall log for Event ID 8816](screenshots/firewall_alert_details.png)
 
 | Field | Value | Notes |
 |---|---|---|
-| Source IP | 10.20.2.17 | Internal host — h.harris's workstation |
+| Source IP | 10.20.2.17 | h.harris's workstation |
 | Destination IP | 67.199.248.11 | Blacklisted external IP |
 | Destination Port | 80 | HTTP |
-| URL | http://bit.ly/3sHkX3da12340 | Same URL from Lab #02 phishing email |
-| Action | Blocked | Firewall caught it |
+| URL | http://bit.ly/3sHkX3da12340 | Same URL from Lab #02 |
+| Action | Blocked | |
 
-Ran the destination IP through TryDetectThis to confirm independently.
+Ran the destination IP through TryDetectThis.
 
 ![TryDetectThis confirming 67.199.248.11 as MALICIOUS](screenshots/ip_reputation_malicious.png)
 
-Also ran the URL itself.
+Also ran the URL.
 
-![TryDetectThis confirming the bit.ly URL as MALICIOUS](screenshots/url_reputation_malicious.png)
+![TryDetectThis confirming the URL as MALICIOUS](screenshots/url_reputation_malicious.png)
 
-Both malicious. No doubt about a false positive here.
+Both malicious. Filled out the incident report and escalated.
 
-The firewall blocked the connection but that doesn't mean nothing happened — we don't know if the user entered credentials before the block kicked in. That's why this needed to go up.
-
-![Completed incident report](screenshots/incident_report.png)
-
-| Field | Detail |
-|---|---|
-| Affected Host | 10.20.2.17 |
-| Classification | True Positive |
-| Reason for Escalation | Potential compromised workstation/account |
+![Incident report](screenshots/incident_report.png)
 
 ---
 
-## How This Connects to Lab #02
+## Connection to Lab #02
 
 | Time | Event |
 |---|---|
-| 14:59 | Phishing email delivered to h.harris (Lab #02) |
-| 15:00 | User clicks the link — 10.20.2.17 initiates outbound connection |
-| 19:59 | Firewall alert fires (Lab #03) |
-
-The phishing email from Lab #02 is what caused this alert. Two separate alerts, one attack chain.
+| 14:59 | Phishing email delivered to h.harris |
+| 15:00 | User clicks link, 10.20.2.17 initiates outbound connection |
+| 19:59 | Firewall alert fires |
 
 ---
 
@@ -85,18 +73,16 @@ The phishing email from Lab #02 is what caused this alert. Two separate alerts, 
 
 | Technique ID | Technique Name | Notes |
 |---|---|---|
-| T1566.002 | Phishing: Spearphishing Link | User clicked link from phishing email in Lab #02 |
-| T1204.001 | User Execution: Malicious Link | Outbound connection initiated from internal host |
-| T1071.001 | Application Layer Protocol: Web Protocols | HTTP over TCP/80 to attacker IP |
-| T1090 | Proxy | bit.ly used to redirect to malicious destination |
+| T1566.002 | Phishing: Spearphishing Link | User clicked link from Lab #02 phishing email |
+| T1204.001 | User Execution: Malicious Link | Outbound connection from internal host |
+| T1071.001 | Application Layer Protocol: Web Protocols | HTTP over TCP/80 |
+| T1090 | Proxy | bit.ly redirecting to malicious destination |
 
 ---
 
 ## Verdict
 
-True positive, escalated. The firewall blocked the connection but a blocked connection still means something triggered it. Recommended actions: contact h.harris and find out if anything was entered, isolate 10.20.2.17 if needed, reset credentials, and pull endpoint logs. Make sure the IP and URL are blocked org-wide.
-
-Big takeaway from this one — working the phishing ticket and the firewall ticket separately would've missed the full picture. Correlating them told the whole story.
+True positive, escalated. Firewall blocked the connection but we don't know if the user entered anything before it was cut. Recommended: contact h.harris, isolate 10.20.2.17 if needed, reset credentials, pull endpoint logs, confirm IP and URL are blocked org-wide.
 
 ---
 

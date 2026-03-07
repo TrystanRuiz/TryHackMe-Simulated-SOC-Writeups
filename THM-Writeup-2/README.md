@@ -18,34 +18,29 @@
 
 ---
 
-## What Happened
+## Investigation
 
-Medium severity alert came in for an inbound email with a suspicious external link. Pulled up the case for Event ID 8815.
+Pulled up Event ID 8815. Inbound email flagged for a suspicious external link.
 
-First thing I checked was the sender — `urgents@amazon.biz`. Amazon emails come from @amazon.com, not .biz. Already a red flag before even reading the email. Subject line was "Your Amazon Package Couldn't Be Delivered – Action Required" which is the oldest urgency trick in the book.
+Checked the sender first — `urgents@amazon.biz`. Amazon sends from @amazon.com, not .biz. Subject was "Your Amazon Package Couldn't Be Delivered – Action Required." No attachment, just a bit.ly link asking the user to confirm shipping info.
 
-The email had no attachment but had a bit.ly link telling the user to click and confirm their shipping info. bit.ly shorteners are worth flagging on their own since they hide where the link actually goes.
+![Alert case report showing Event ID 8815](screenshots/alert_case_report.png)
 
-![Alert case report showing Event ID 8815 flagged as phishing with medium severity](screenshots/alert_case_report.png)
-
-![Full email artifact details for Event ID 8815](screenshots/alert_case_report2.png)
-
-**Email artifacts:**
+![Email artifact details](screenshots/alert_case_report2.png)
 
 | Artifact | Value | Finding |
 |---|---|---|
-| Sender | urgents@amazon.biz | Suspicious — legitimate Amazon uses @amazon.com |
-| Recipient | h.harris@thetrydaily.thm | Internal employee targeted |
+| Sender | urgents@amazon.biz | Spoofed — Amazon uses @amazon.com |
+| Recipient | h.harris@thetrydaily.thm | Internal employee |
 | Subject | Your Amazon Package Couldn't Be Delivered – Action Required | Urgency lure |
 | Attachment | None | |
-| Direction | Inbound | External sender |
-| Embedded URL | http://bit.ly/3sHkX3da12340 | URL-shortened, destination unknown |
+| Embedded URL | http://bit.ly/3sHkX3da12340 | URL-shortened link |
 
-Ran the bit.ly link through TryDetectThis to see where it goes.
+Ran the bit.ly link through TryDetectThis.
 
-![TryDetectThis URL analysis confirming the embedded bit.ly link as MALICIOUS](screenshots/url_analysis_malicious.png)
+![TryDetectThis confirming MALICIOUS](screenshots/url_analysis_malicious.png)
 
-Came back malicious. That was enough to close this as a true positive.
+Came back malicious.
 
 ---
 
@@ -62,17 +57,15 @@ Came back malicious. That was enough to close this as a true positive.
 
 | Technique ID | Technique Name | Notes |
 |---|---|---|
-| T1566.002 | Phishing: Spearphishing Link | Malicious URL sent via email to internal employee |
+| T1566.002 | Phishing: Spearphishing Link | Malicious URL sent via email |
 | T1036.005 | Masquerading: Match Legitimate Name | Sender spoofing Amazon domain |
-| T1204.001 | User Execution: Malicious Link | User prompted to click link to confirm shipping info |
+| T1204.001 | User Execution: Malicious Link | User prompted to click link |
 
 ---
 
 ## Verdict
 
-True positive. The sender domain was spoofed, the link confirmed malicious. No evidence h.harris actually clicked it so no escalation needed — just blocked the domain at the email gateway, quarantined the email, and flagged the bit.ly URL.
-
-Worth noting: medium severity still needs full triage. This could've led to credential theft if the user clicked.
+True positive. Spoofed sender domain, malicious URL confirmed. No evidence h.harris clicked it — blocked the domain, quarantined the email, added the URL to the blocklist.
 
 ---
 

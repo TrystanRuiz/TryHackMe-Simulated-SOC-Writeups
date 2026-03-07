@@ -1,9 +1,10 @@
 # SOC Lab #02 — Phishing Email Investigation
+
 ---
 
 ## Overview
 
-This lab involved triaging an inbound phishing alert triggered by a suspicious email flagged by the SIEM. The investigation required analyzing email artifacts to identify indicators of compromise (IOCs), confirm malicious intent, and determine the appropriate response action.
+Got an alert for an inbound email flagged by the SIEM for containing a suspicious external link. Went through the email artifacts, ran the URL through a reputation check, and closed it as a true positive. No escalation needed.
 
 ---
 
@@ -24,7 +25,7 @@ This lab involved triaging an inbound phishing alert triggered by a suspicious e
 
 ### Step 1 — Alert Triage
 
-Upon receiving the alert, I reviewed the case report for Event ID 8815. The alert rule fired on an inbound email flagged for containing one or more external links with potentially suspicious characteristics. The SIEM recommended checking firewall and proxy logs to determine if any endpoints had attempted to access the embedded URLs.
+Pulled up Event ID 8815. The rule fired on an inbound email with an external link that tripped the filter. The SIEM also noted to check firewall and proxy logs to see if anyone actually tried to reach the URL.
 
 ![Alert case report showing Event ID 8815 flagged as phishing with medium severity](screenshots/alert_case_report.png)
 *Figure 1: Case report for Event ID 8815 — Inbound Email Containing Suspicious External Link*
@@ -33,7 +34,7 @@ Upon receiving the alert, I reviewed the case report for Event ID 8815. The aler
 
 ### Step 2 — Email Artifact Analysis
 
-I reviewed the full email metadata and content to identify IOCs:
+Went through the email header and body. A few things stood out right away.
 
 | Artifact | Value | Finding |
 |---|---|---|
@@ -44,27 +45,25 @@ I reviewed the full email metadata and content to identify IOCs:
 | Direction | Inbound | External sender |
 | Embedded URL | http://bit.ly/3sHkX3da12340 | URL-shortened link — masks true destination |
 
-**Key red flags identified:**
+The sender was `urgents@amazon.biz`. Amazon doesn't send from `.biz`, it's `@amazon.com`. The subject line was the usual "Action Required" urgency bait, and the embedded link was a bit.ly short URL which already looks suspicious since it hides where it actually goes. The email was telling the user to click to confirm shipping info — textbook credential harvesting setup.
 
-- **Sender domain spoofing** — The email claims to be from Amazon Delivery but originates from `urgents@amazon.biz`, not the legitimate `@amazon.com` domain. This is a classic impersonation technique.
-- **Urgency and social engineering** — The subject line creates a false sense of urgency ("Action Required") to pressure the recipient into clicking without thinking.
-- **URL shortening** — The bit.ly link obscures the true destination URL, a common tactic used to bypass email filters and hide malicious domains from recipients.
-- **Credential harvesting setup** — The email body instructs the recipient to click the link to confirm shipping information, consistent with a credential phishing page.
+![Alert case report showing full email details including sender, recipient, subject, and embedded URL](screenshots/alert_case_report2.png)
+*Figure 2: Full email artifact details for Event ID 8815*
 
 ---
 
 ### Step 3 — URL Reputation Analysis
 
-I extracted the embedded URL from the email and submitted it to TryDetectThis, a URL/IP security analysis tool available in the Analyst VM, to determine its reputation and confirm malicious status.
+Ran the bit.ly link through TryDetectThis to see if it was flagged.
 
 **URL submitted:** `http://bit.ly/3sHkX3da12340`
 
 **Result: MALICIOUS**
 
 ![TryDetectThis URL analysis confirming the embedded bit.ly link as MALICIOUS](screenshots/url_analysis_malicious.png)
-*Figure 2: TryDetectThis URL/IP Security Check confirming MALICIOUS status for the embedded link*
+*Figure 3: TryDetectThis URL/IP Security Check confirming MALICIOUS status for the embedded link*
 
-The tool confirmed the URL as malicious, corroborating the phishing indicators identified during email artifact analysis.
+Came back malicious. That confirmed it.
 
 ---
 
@@ -90,26 +89,26 @@ The tool confirmed the URL as malicious, corroborating the phishing indicators i
 
 ## Verdict & Response
 
-**Classification:** True Positive  
+**Classification:** True Positive
 **Escalation Required:** No
 
-Based on the email artifact analysis and URL reputation confirmation, this alert was classified as a **true positive phishing attempt**. The email impersonated Amazon Delivery using a lookalike sender domain, embedded a URL-shortened malicious link, and used urgency-based social engineering to prompt the recipient to click.
+Pretty clear-cut phishing attempt. Fake Amazon sender domain, URL shortener hiding a malicious link, urgency subject line. URL confirmed malicious so I closed it as a true positive. No evidence the user clicked it so no escalation needed.
 
 **Recommended defensive actions:**
 
 - Block sender domain `amazon.biz` at the email gateway
 - Quarantine the email from recipient's inbox
-- Notify the targeted user `h.harris@thetrydaily.thm` with phishing awareness guidance
+- Let `h.harris@thetrydaily.thm` know what happened and send over some phishing awareness guidance
 - Add the bit.ly URL to the blocklist
 
 ---
 
 ## Key Takeaways
 
-- URL shorteners like bit.ly are a common evasion technique — always expand and analyze shortened links before trusting them
-- Sender domain verification is one of the fastest ways to identify spoofed emails — `@amazon.biz` vs `@amazon.com` is a clear mismatch
-- Medium severity alerts still require full triage — this was a confirmed phish that could have led to credential theft if the user clicked the link
-- Not every true positive requires escalation — thorough documentation and containment actions are sufficient for straightforward phishing cases
+- `@amazon.biz` vs `@amazon.com` is an obvious tell once you look — always check if the sender domain actually matches the company they're claiming to be
+- bit.ly and other URL shorteners should be treated as suspicious until you know where they actually go — run them through a rep tool before doing anything else
+- Medium severity doesn't mean low importance. This was a real phish that could've led to stolen creds if the user clicked
+- Not every true positive needs escalation — if there's no evidence the user interacted with it, containment at the email level is enough
 
 ---
 

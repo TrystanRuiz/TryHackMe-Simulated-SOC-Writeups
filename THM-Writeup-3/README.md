@@ -21,29 +21,29 @@
 
 ## Investigation
 
-Pulled up Event ID 8816. Internal host attempted an outbound connection to a blacklisted IP, firewall blocked it.
+Event ID 8816 was flagged on the SIEM at 19:59, approximately five hours after the phishing email from Lab #02 was delivered to `h.harris@thetrydaily.thm`. The alert rule triggered when the firewall detected and blocked an outbound connection from an internal host attempting to reach a blacklisted external URL. Opening the case revealed the full firewall log details for analysis.
 
-URL in the log was `http://bit.ly/3sHkX3da12340` — same link from the phishing email in Lab #02. h.harris clicked it.
+The source IP was `10.20.2.17`, which is `h.harris`'s internal workstation, attempting an outbound HTTP connection to destination IP `67.199.248.11` on TCP port 80. The URL logged by the firewall was `http://bit.ly/3sHkX3da12340`, which is the exact same shortened URL that was embedded in the phishing email from Lab #02. This confirms that `h.harris` clicked the malicious link at some point after it was delivered at 14:59.
+
+It is important to note that a blocked connection does not guarantee that no data was transmitted. The bit.ly link would have attempted to redirect to a downstream destination, and depending on timing, partial traffic may have occurred before the firewall rule engaged. Endpoint logs from `10.20.2.17` would be needed to fully confirm what was or was not communicated.
 
 ![Firewall log for Event ID 8816](screenshots/firewall_alert_details.png)
 
 | Field | Value | Notes |
 |---|---|---|
-| Source IP | 10.20.2.17 | h.harris's workstation |
+| Source IP | 10.20.2.17 | h.harris's internal workstation |
 | Destination IP | 67.199.248.11 | Blacklisted external IP |
-| Destination Port | 80 | HTTP |
-| URL | http://bit.ly/3sHkX3da12340 | Same URL from Lab #02 |
-| Action | Blocked | |
+| Destination Port | 80 | Unencrypted HTTP traffic |
+| URL | http://bit.ly/3sHkX3da12340 | Same URL from Lab #02 phishing email |
+| Action | Blocked | Firewall prevented connection from completing |
 
-Ran the destination IP through TryDetectThis.
+Both the destination IP and the URL were submitted to TryDetectThis independently, the scenario's internal threat intelligence platform, essentially the same thing as VirusTotal, which checks submissions against known threat feeds and reputation databases to return a malicious or clean verdict.
 
 ![TryDetectThis confirming 67.199.248.11 as MALICIOUS](screenshots/ip_reputation_malicious.png)
 
-Also ran the URL.
-
 ![TryDetectThis confirming the URL as MALICIOUS](screenshots/url_reputation_malicious.png)
 
-Both malicious. Filled out the incident report and escalated.
+As seen in the screenshots above, both the destination IP and the URL returned malicious verdicts. The full incident report was completed and the event was escalated given that a user had actively clicked a confirmed malicious link and their workstation had initiated an outbound connection to a known malicious IP.
 
 ![Incident report](screenshots/incident_report.png)
 
@@ -53,9 +53,9 @@ Both malicious. Filled out the incident report and escalated.
 
 | Time | Event |
 |---|---|
-| 14:59 | Phishing email delivered to h.harris |
-| 15:00 | User clicks link, 10.20.2.17 initiates outbound connection |
-| 19:59 | Firewall alert fires |
+| 14:59 | Phishing email with malicious bit.ly link delivered to h.harris |
+| ~15:00 | h.harris clicks the link; 10.20.2.17 initiates outbound connection to 67.199.248.11 |
+| 19:59 | Firewall alert fires; outbound connection blocked and logged |
 
 ---
 
@@ -82,7 +82,7 @@ Both malicious. Filled out the incident report and escalated.
 
 ## Verdict
 
-True positive, escalated. Firewall blocked the connection but we don't know if the user entered anything before it was cut. Recommended: contact h.harris, isolate 10.20.2.17 if needed, reset credentials, pull endpoint logs, confirm IP and URL are blocked org-wide.
+True positive, escalated. The firewall blocked the outbound connection, but `h.harris` did click the malicious link from the Lab #02 phishing email. The destination behind the bit.ly shortener resolved to `67.199.248.11`, a confirmed malicious IP. Recommended follow-up actions: contact `h.harris` and advise them of the incident, isolate workstation `10.20.2.17` pending further investigation, pull endpoint logs to determine if any data was transmitted before the block, reset `h.harris`'s credentials as a precaution, and confirm `67.199.248.11` and `http://bit.ly/3sHkX3da12340` are blocked organization-wide.
 
 ---
 

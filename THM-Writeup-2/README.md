@@ -20,9 +20,17 @@
 
 ## Investigation
 
-Pulled up Event ID 8815. Inbound email flagged for a suspicious external link.
+Event ID 8815 was flagged on the SIEM due to an alert rule firing for an inbound email containing a suspicious external link. Opening the case in the SOC platform revealed the full email artifact details for analysis.
 
-Checked the sender first — `urgents@amazon.biz`. Amazon sends from @amazon.com, not .biz. Subject was "Your Amazon Package Couldn't Be Delivered – Action Required." No attachment, just a bit.ly link asking the user to confirm shipping info.
+The sender was `urgents@amazon.biz` and the recipient was `h.harris@thetrydaily.thm`. The recipient is a confirmed internal employee. The sender domain `amazon.biz` is not a legitimate Amazon domain. Amazon exclusively sends from `@amazon.com` and has no association with the `.biz` TLD, making this a clear indicator of sender domain spoofing where a threat actor registers a lookalike domain to impersonate a trusted brand. You can also verify sender legitimacy against internal records (which I did) by confirming whether the sending domain matches any known official vendor accounts.
+
+The subject line was: **"Your Amazon Package Couldn't Be Delivered - Action Required."**
+
+This is a social engineering lure designed to create urgency around a missed package delivery, a scenario plausible enough for almost any recipient. The goal is to pressure the user into clicking the link without scrutinizing the email.
+
+There was no file attachment. The email contained a single embedded URL: `http://bit.ly/3sHkX3da12340`.
+
+The use of a bit.ly URL shortener is a red flag in this context. Legitimate Amazon delivery notifications link directly to `amazon.com` domains, not third-party URL shorteners. Shorteners are commonly abused in phishing campaigns because they hide the true destination, making it impossible to identify where the link actually leads without following it.
 
 ![Alert case report showing Event ID 8815](screenshots/alert_case_report.png)
 
@@ -30,17 +38,17 @@ Checked the sender first — `urgents@amazon.biz`. Amazon sends from @amazon.com
 
 | Artifact | Value | Finding |
 |---|---|---|
-| Sender | urgents@amazon.biz | Spoofed — Amazon uses @amazon.com |
+| Sender | urgents@amazon.biz | Spoofed sender domain, not a legitimate Amazon domain |
 | Recipient | h.harris@thetrydaily.thm | Internal employee |
-| Subject | Your Amazon Package Couldn't Be Delivered – Action Required | Urgency lure |
-| Attachment | None | |
-| Embedded URL | http://bit.ly/3sHkX3da12340 | URL-shortened link |
+| Subject | Your Amazon Package Couldn't Be Delivered - Action Required | Urgency-based social engineering lure |
+| Attachment | None | No malicious file risk |
+| Embedded URL | http://bit.ly/3sHkX3da12340 | URL shortener hiding true destination |
 
-Ran the bit.ly link through TryDetectThis.
+To confirm whether the URL was malicious or not, it was submitted to TryDetectThis, the scenario's internal threat intelligence platform, essentially the same thing as VirusTotal, which checks submissions against known threat feeds and reputation databases to return a malicious or clean verdict.
 
 ![TryDetectThis confirming MALICIOUS](screenshots/url_analysis_malicious.png)
 
-Came back malicious.
+As seen in the screenshot above, TryDetectThis returned a malicious verdict on the bit.ly URL. Combined with the spoofed sender domain, this confirms a true positive. There is no evidence in the logs that `h.harris` clicked the link, so the threat was contained at the email delivery level.
 
 ---
 
@@ -65,7 +73,7 @@ Came back malicious.
 
 ## Verdict
 
-True positive. Spoofed sender domain, malicious URL confirmed. No evidence h.harris clicked it — blocked the domain, quarantined the email, added the URL to the blocklist.
+True positive. The sender domain `amazon.biz` is spoofed and has no affiliation with Amazon. The embedded bit.ly URL was confirmed malicious by TryDetectThis. No evidence was found that `h.harris` clicked the link. Actions taken: domain `amazon.biz` blocked, email quarantined, URL `http://bit.ly/3sHkX3da12340` added to the blocklist. Alert closed, no escalation required.
 
 ---
 

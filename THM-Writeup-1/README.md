@@ -22,15 +22,13 @@
 
 Event ID 8814 was flagged on the SIEM due to an alert rule firing for an inbound email containing a suspicious external link. Opening the case in the SOC platform revealed the full email artifact details for analysis.
 
-The sender was `onboarding@hrconnex.thm` and the recipient was `j.garcia@thetrydaily.thm`. Both domains `hrconnex.thm` and `thetrydaily.thm`  are internal domains within the organization's environment, meaning this email originated from one internal system to another internal employee. This reduces the likelihood of an external threat actor at the sender level, though a compromised internal account is still a valid attack vector, so the alert still required full investigation.
+The sender was `onboarding@hrconnex.thm` and the recipient was `j.garcia@thetrydaily.thm`. Both domains `hrconnex.thm` and `thetrydaily.thm`  are internal domains within the organization's environment, meaning this email originated from one internal system to another internal employee. This reduces the likelihood of an external threat actor at the sender level, though a compromised internal account is still a valid attack vector, so the alert still required full investigation. You can also check sender/receiver info on an internal databases (which i did) by confirming offical company accounts
 
 The subject line was: **"Action Required: Finalize Your Onboarding Profile."**
 
 This phrasing is consistent with legitimate HR onboarding communications. It uses urgency language ("Action Required"), but that is common in real onboarding workflows and is not sufficient on its own as an indicator of malicious intent.
 
 There was no file attachment. The only potentially suspicious element was an embedded URL: `https://hrconnex.thm/onboarding/15400654060/j.garcia`.
-
-The URL structure includes a unique numeric token (`15400654060`) and the recipient's username (`j.garcia`), which is consistent with how legitimate onboarding platforms generate per-user enrollment links. Malicious URLs occasionally mimic this pattern, so the URL still needed to be verified rather than assumed safe.
 
 ![Case report for Event ID 8814](screenshots/thm1.png)
 
@@ -42,7 +40,7 @@ The URL structure includes a unique numeric token (`15400654060`) and the recipi
 | Attachment | None | No malicious file risk |
 | Embedded URL | https://hrconnex.thm/onboarding/15400654060/j.garcia | User-specific onboarding link — internal domain |
 
-To confirm whether the URL was malicious or benign, it was submitted to TryDetectThis — the scenario's internal threat intelligence platform, functionally similar to VirusTotal, which checks submissions against known threat feeds and reputation databases to return a malicious or clean verdict.
+To confirm whether the URL was malicious or not, it was submitted to TryDetectThis the scenario's internal threat intelligence platform, essentially the same thing as VirusTotal, which checks submissions against known threat feeds and reputation databases to return a malicious or clean verdict.
 
 ![TryDetectThis showing SAFE](screenshots/thm3.png)
 
@@ -54,7 +52,7 @@ The URL returned clean with no malicious indicators. Combined with the internal 
 
 ## Verdict
 
-False positive. The alert fired correctly — an inbound email with an embedded link triggered the suspicious link detection rule. However, upon investigation the sender is an internal HR platform, the recipient is a legitimate internal employee, the URL matches a standard onboarding link structure, and TryDetectThis returned a clean verdict. No indicators of malicious activity were found. Alert closed with rationale documented. Detection rules do not need to be updated at this time.
+False positive. The alert fired correctly  an inbound email with an embedded link triggered the suspicious link detection rule. Upon investigation the sender is an internal HR platform, the recipient is a legitimate internal employee, the URL matches a standard onboarding link structure, and TryDetectThis returned a clean verdict. No indicators of malicious activity were found. Alert closed with rationale documented. Detection rules do not need to be updated at this time.
 
 ---
 

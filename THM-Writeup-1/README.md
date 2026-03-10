@@ -22,7 +22,7 @@
 
 Event ID 8814 was flagged on the SIEM due to an alert rule firing for an inbound email containing a suspicious external link. Opening the case in the SOC platform revealed the full email artifact details for analysis.
 
-The sender was `onboarding@hrconnex.thm` and the recipient was `j.garcia@thetrydaily.thm`. Both domains — `hrconnex.thm` and `thetrydaily.thm` — are internal domains within the organization's environment, meaning this email originated from one internal system to another internal employee. This reduces the likelihood of an external threat actor at the sender level, though a compromised internal account is still a valid attack vector, so the alert still required full investigation.
+The sender was `onboarding@hrconnex.thm` and the recipient was `j.garcia@thetrydaily.thm`. Both domains `hrconnex.thm` and `thetrydaily.thm`  are internal domains within the organization's environment, meaning this email originated from one internal system to another internal employee. This reduces the likelihood of an external threat actor at the sender level, though a compromised internal account is still a valid attack vector, so the alert still required full investigation.
 
 The subject line was: **"Action Required: Finalize Your Onboarding Profile."**
 

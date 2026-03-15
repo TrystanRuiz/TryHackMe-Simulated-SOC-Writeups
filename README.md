@@ -1,3 +1,12 @@
-# Trystan Ruiz
+# TryHackMe Simulated SOC Writeups
 
-Junior at UCF studying Information Technology. CompTIA Security+ certified, Network+ and CySA+ in progress. Focused on blue team, security monitoring, and building things hands-on. Currently looking for internships, feel free to look around.
+A collection of SOC analyst simulation writeups covering real-world ticket response scenarios.
+
+## Writeups
+
+| # | Title |
+|---|-------|
+| 1 | [Phishing Email — False Positive (HR Onboarding)](./THM-Writeup-1/README.md) |
+| 2 | [Phishing Email — Amazon Impersonation](./THM-Writeup-2/README.md) |
+| 3 | [Firewall Alert: Access to Blacklisted External URL](./THM-Writeup-3/README.md) |
+| 4 | [Phishing Email — Microsoft Account Impersonation](./THM-Writeup-4/README.md) |
